@@ -17,9 +17,9 @@
 
 void counter(){
   
-  TreeReader data("gjets40to100.root");
+  TreeReader data("gjets40to100_2.root");
   
-  TH1D* h_parton  = new TH1D(" ","HT 40 to 100",50,0,120);
+  TH1D* h_parton  = new TH1D(" ","HT distribution",16,30,110);
 
   // begin of event loop                                                                                                                                    
   for (Long64_t ev = 0; ev < data.GetEntriesFast(); ev++){
@@ -39,9 +39,7 @@ void counter(){
     Float_t* genParEta   = data.GetPtrFloat("genParEta");
     Float_t* genParPhi   = data.GetPtrFloat("genParPhi");
     Float_t* genParM     = data.GetPtrFloat("genParM");
-    
-    TLorentzVector quark(0,0,0,0);
-    TLorentzVector gluon(0,0,0,0);
+    Float_t  HT          = data.GetFloat("HT");    
     
     Int_t photonIndex = -1;
     vector<int> jetIndices;  
@@ -57,6 +55,7 @@ void counter(){
     Int_t phoMo1 = genMo1[photonIndex];
     Int_t phoMo2 = genMo2[photonIndex];
     
+    Float_t sum = HT;
     for(int ij=0; ij < jetIndices.size(); ij++) {
       Int_t jetIndex = jetIndices[ij];
       if(jetIndex < 0) continue;
@@ -66,19 +65,13 @@ void counter(){
      
       if(phoMo1 != jetMo1 || phoMo2 != jetMo2) continue;
 
-      if(genParId[jetIndex] == 21) gluon.SetPtEtaPhiM(genParPt[jetIndex],genParEta[jetIndex],genParPhi[jetIndex],genParM[jetIndex]);
-      else if(abs(genParId[jetIndex]) < 6 && abs(genParId[jetIndex]) > 0)
-        quark.SetPtEtaPhiM(genParPt[jetIndex],genParEta[jetIndex],genParPhi[jetIndex],genParM[jetIndex]);
-      
-      Float_t p = sqrt(gluon.Pt()*gluon.Pt()) + sqrt(quark.Pt()*quark.Pt());
-      h_parton->Fill(p);
     }
-    
+    h_parton->Fill(sum);
     
   } // end of event loop 
   Double_t scale = 20930/h_parton->Integral(); // 20930 is the cross section of HT 40 to 100
   h_parton->Scale(scale);
-  h_parton->SetLineColor(kOrange-1);
+  h_parton->SetLineColor(kOrange-1); 
   h_parton->SetFillColor(kOrange-1);
   h_parton->GetXaxis()->SetTitle("H_{T} (GeV)");
   h_parton->Draw();
